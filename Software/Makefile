@@ -16,8 +16,8 @@ endif
 
 # ----- user settings -----
 CONFIG := ./arduino-cli.yaml
-SKETCH := PD_Stepper_Web_Server.ino
 BUILD  := build
+SKETCH ?= PD_Stepper_Web_Server
 BAUD   ?= 115200
 FQBN   ?= esp32:esp32:esp32s3
 DTO    ?= 100ms
@@ -42,11 +42,11 @@ help:
 
 init: ## One-time: init config, install core + libs
 	$(CLI) config init
+	$(CLI) config set directories.data shared/data
+	$(CLI) config set directories.user shared
+	$(CLI) config set directories.downloads shared/downloads
 #	$(CLI) config set network.connection_timeout 600s	# Enable if internet is slow and installing core or libraries fail
 	$(CLI) config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json 
-	$(CLI) config set directories.data ./data
-	$(CLI) config set directories.user .
-	$(CLI) config set directories.downloads ./downloads
 	$(CLI) core update-index
 	$(CLI) core install "esp32:esp32@2.0.14" 	# Version with mbedtls_md5_xxx_ret routines
 #	$(CLI) core install "esp32:esp32"		# EXPECT `make compile` TO FAIL as mbdtls_md5_xxx_ret routines do not exist. Renaming them, dropping `_ret`, in WebAuthentication.cpp does allow the `make compile` to succeed
@@ -61,16 +61,16 @@ init: ## One-time: init config, install core + libs
 	$(CLI) lib install "TMC2209"
 
 uninit: ## Remove all files/dirs created by running `make init`
-	rm -rf arduino-cli.yaml build data downloads libraries
+	rm -rf arduino-cli.yaml build shared
 
 # delete half-baked binary if compile fails
-.DELETE_ON_ERROR: $(BUILD)/$(SKETCH).bin
+.DELETE_ON_ERROR: $(BUILD)/$(SKETCH).ino.bin
 
-$(BUILD)/$(SKETCH).bin: $(SKETCH)
+$(BUILD)/$(SKETCH).ino.bin: ./$(SKETCH)/$(SKETCH).ino
 	printf "Compiling sketch '%s' for %s...\n" "$(SKETCH)" "$(FQBN)"
-	$(CLI) compile -b "$(FQBN)" --build-path "$(BUILD)"
+	$(CLI) compile -b "$(FQBN)" --build-path "$(BUILD)" "./$(SKETCH)"
 
-compile: $(BUILD)/$(SKETCH).bin ## Compile if sketch changed
+compile: $(BUILD)/$(SKETCH).ino.bin ## Compile if sketch changed
 c: compile ##alias
 
 # Helper: resolve port (use PORT if set, else auto-detect), then run $(1)
