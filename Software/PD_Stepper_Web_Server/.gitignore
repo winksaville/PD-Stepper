@@ -1,0 +1,5 @@
+arduino-cli.yaml
+build/
+data/
+downloads/
+libraries/
