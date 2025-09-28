@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/Software/**",
+                "${workspaceFolder}/Software/shared/data/packages/esp32/hardware/esp32/3.3.1/libraries/**",
+                "${workspaceFolder}/Software/shared/data/packages/esp32/tools/esp32-arduino-libs/idf-release_v5.5-129cd0d2-v4/esp32s3/include/xtensa/include/xtensa/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}

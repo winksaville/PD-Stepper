@@ -135,14 +135,15 @@ void loop() {
     lastFlash = millis();
     digitalWrite(LED1, flashState);
     if (flashState == 0){
+      Serial.println("LED Off");
+      delay(1000);
       flashState = 1;
     } else {
+      Serial.println("LED On");
+      delay(100);
       flashState = 0;
     }
   }
-
-  delay(100);
-  
 }
 
 //run the stepper motor at set speed and direction (ensure readVoltage() called first to get PGState)
