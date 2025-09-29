@@ -112,6 +112,18 @@ void setup() {
   
 }
 
+void change_flastInt(int var) {
+  flashInt += var;
+  if (flashInt < 100) {
+    flashInt = 100;
+  }
+  if (flashInt > 1000) {
+    flashInt = 1000;
+  }
+  Serial.print("LED flash interval now: ");
+  Serial.println(flashInt);
+}
+
 void loop() {
   //flash LED to show code is running
   if (millis() - lastFlash > flashInt){
@@ -140,6 +152,7 @@ void loop() {
         }
         Serial.print("Counter increased to: ");
         Serial.println(counter);
+        change_flastInt(200);
       }
     }
 
@@ -152,6 +165,7 @@ void loop() {
         }
         Serial.print("Counter decreased to: ");
         Serial.println(counter);
+        change_flastInt(-200);
       }
     }
 
@@ -160,6 +174,7 @@ void loop() {
       if (resetButtonState == LOW) {
         counter = 0;
         Serial.println("Counter reset");
+        change_flastInt(-flashInt); // set to default
       }
     }
   }
