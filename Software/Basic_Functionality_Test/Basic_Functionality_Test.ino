@@ -135,8 +135,10 @@ void loop() {
     lastFlash = millis();
     digitalWrite(LED1, flashState);
     if (flashState == 0){
+      Serial.println("flashState 1");
       flashState = 1;
     } else {
+      Serial.println("flashState 0");
       flashState = 0;
     }
   }
