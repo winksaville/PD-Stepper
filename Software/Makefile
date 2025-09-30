@@ -22,6 +22,7 @@ DTO    ?= 100ms
 LFRMT  ?=                # pass `LFRMT=--json` to get JSON; `make list LFRMT=--json`
 PORT   ?=                # pass `PORT=/dev/ttyXXX`; e.g. `make upload S=Foo PORT=/dev/ttyUSB0`
 CLI_V  ?=                # pass `CLI_V=-v`; e.g. `make compile S=Foo CLI_V=-v`
+OTHER_CC ?=              # pass `OTHER_CC=xx` other compile commands such as --only-compilation-database
 
 CLI := arduino-cli $(CLI_V) --config-file "$(CONFIG)"
 
@@ -41,13 +42,17 @@ define indent
 	@printf '$(INDENT)%s\n' $(1) '' $(2)
 endef
 
-help h H: ## Show this help
+define check-sketch
+	@test -n "$(SKETCH)" || { echo "Error: set S=<SketchDir> (or SKETCH=)"; exit 1; }
+endef
+
+help h H: ## `make h` Show this help
 	$(call indent, $(INDENT_ZR0), "Usage:")
 	$(call indent, $(INDENT_PAD), "make help")
-	$(call indent, $(INDENT_PAD), "make <target> SKETCH=<SketchDir>")
+	$(call indent, $(INDENT_PAD), "make <target> {SKETCH|S}=<SketchDir>")
 	$(call indent, $(INDENT_ZR0), "Examples:")
-	$(call indent, $(INDENT_PAD), "make compile  SKETCH=esp32s3-rbg-blink")
-	$(call indent, $(INDENT_PAD), "make c SKETCH=esp32s3-rbg-blink")
+	$(call indent, $(INDENT_PAD), "make compile  SKETCH=Simple_Button_Control");
+	$(call indent, $(INDENT_PAD), "make c S=Simple_Button_Control");
 	$(call indent, $(INDENT_ZR0), "")
 	$(call indent, $(INDENT_ZR0), "Notes:")
 	$(call indent, $(INDENT_PAD), "- <SketchDir> must be a subdir containing <SketchDir>/<SketchDir>.ino")
@@ -56,7 +61,7 @@ help h H: ## Show this help
 	$(call indent, $(INDENT_ZR0), "Targets:")
 	@awk -v indent_pad=$(INDENT_PAD) -v desc_pad=$(DESC_PAD) -f support/target-list.awk $(lastword $(MAKEFILE_LIST))
 
-init: ## One-time: init config, install core + libs
+init: ## `make init` One-time: init config, install core + libs
 	$(CLI) config init
 	$(CLI) config set directories.data shared/data
 	$(CLI) config set directories.user shared
@@ -69,18 +74,16 @@ init: ## One-time: init config, install core + libs
 	$(CLI) lib install "ESPAsyncWebServer"
 	$(CLI) lib install "TMC2209"
 
-uninit: ## Remove all files/dirs created by running `make init`
+uninit: ## `make unint` Remove all files/dirs created by running `make init`
 	rm -rf arduino-cli.yaml build shared
 
-lib.help: ## show lib help
+lib.help: ## `make lib.help` Show lib help
 	$(CLI) lib --help
 
-#lib.%:  ## lib.<cmd>
-#	$(CLI) lib $(@:lib.%=%) $(if $(ARG),"$(ARG)")
-lib.%:		## Runs: arduino-cli lib <cmd> "$(PKG)"
+lib.%: ## `make lib.<cmd> PKG=<PackageName>` Runs arduino-cli lib <cmd> "$(PKG)"
 	$(CLI) lib $(@:lib.%=%) $(if $(PKG),"$(PKG)")
 
-list l:   ## List connected boards
+list l: ## `make l` List connected boards
 	$(CLI) board list $(LFRMT) --discovery-timeout "$(DTO)"
 
 # delete half-baked binary if compile fails
@@ -88,13 +91,20 @@ list l:   ## List connected boards
 
 # Build product from ./<SKETCH>/<SKETCH>.ino
 $(BUILD)/$(SKETCH).ino.bin: ./$(SKETCH)/$(SKETCH).ino
-	@test -n "$(SKETCH)" || { echo "Error: set S=<SketchDir> (or SKETCH=)"; exit 1; }
-	@printf "Compiling sketch '%s' for %s...\n" "$(SKETCH)" "$(FQBN)"
-	@$(CLI) compile -b "$(FQBN)" --build-path "$(BUILD)" "./$(SKETCH)"
+	@printf "Compiling sketch '%s' for %s" "$(SKETCH)" "$(FQBN)"; \
+	if [ -n '$(strip $(OTHER_CC))' ]; then \
+	  printf " with opts: %s" '$(OTHER_CC)'; \
+	fi; \
+	printf "\n"
+	@$(CLI) compile -b "$(FQBN)" --build-path "$(BUILD)" "./$(SKETCH)" $(OTHER_CC)
 
-compile c: ## Compile (requires S or SKETCH)
-	@test -n "$(SKETCH)" || { echo "Error: set S=<SketchDir> (or SKETCH=)"; exit 1; }
+compile c: ## `make c S=<SketchDir>` Compile a sketchjjjjj
+	$(call check-sketch)
 	@$(MAKE) $(BUILD)/$(SKETCH).ino.bin
+
+compile_commands cc: ## `make cc S=<SkethcDir>` Generate compile_commands.json using --only-compile-database
+	$(call check-sketch)
+	@$(MAKE) $(BUILD)/$(SKETCH).ino.bin OTHER_CC=--only-compilation-database
 
 # Helper: resolve port (use PORT if set, else auto-detected), then run $(1)
 define GET_PORT
@@ -104,11 +114,11 @@ define GET_PORT
 	$(1)
 endef
 
-upload u: compile ## Compile if needed and Upload, (requires S or SKETCH, optional PORT)
+upload u: compile ## `make u S=<SketchDir>` Compile if needed and Upload, (requires S or SKETCH, optional PORT)
 	$(call GET_PORT,$(CLI) upload -p "$$P" -b "$(FQBN)" --input-dir "$(BUILD)")
 
-monitor m: ## Open serial monitor (optional PORT=<port> default=auto-detected, optional BAUD=<baudrate>, default 115200)
+monitor m: ## `make m {PORT=<port> BAUD=<baudrate>` Open serial monitor optional; PORT=auto-detected, BAUD=115200)
 	$(call GET_PORT,$(CLI) monitor -p "$$P" -c baudrate="$(BAUD)")
 
-clean cl: ## Remove build artifacts
+clean cl: ## `make cl` Remove build artifacts
 	rm -rf -- "$(BUILD)"
