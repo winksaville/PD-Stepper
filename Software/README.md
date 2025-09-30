@@ -2,6 +2,57 @@
 
 #### If you just received your PD Stepper see the [Setup Instructions](https://github.com/joshr120/PD-Stepper/tree/main/Getting%20Started) for how to get started
 
+## Using Makefile and arduino-cli
+
+Install [arduino-cli](https://arduino.github.io/arduino-cli/latest/installation/)
+and ensure it is in your PATH as arduino-cli.
+
+Clone this repo and cd to the Software directory and run `make init`
+to install the required libraries and setup arduino-cli.yaml.
+```
+cd PD-Stepper/Software
+make init
+```
+
+You can compile and upload the Basic Functionality Test sketch with
+```
+make upload S=Basic_Functionality_Test
+```
+
+For debugging and development you can just compile with:
+```
+make compile S=Basic_Functionality_Test
+```
+
+use help to see other options:
+```
+$ make help
+Usage:
+  make help
+  make <target> SKETCH=<SketchDir>
+Examples:
+  make compile  SKETCH=esp32s3-rbg-blink
+  make c SKETCH=esp32s3-rbg-blink
+
+Notes:
+  - <SketchDir> must be a subdir containing <SketchDir>/<SketchDir>.ino
+  - Trailing '/' after the sketch name is accepted
+
+Targets:
+  help h H       Show this help
+  init           One-time: init config, install core + libs
+  uninit         Remove all files/dirs created by running `make init`
+  lib.help       show lib help
+  #lib.<cmd>     lib.<cmd>
+  lib.<cmd>      Runs: arduino-cli lib <cmd> "$(PKG)"
+  list l         List connected boards
+  compile c      Compile (requires S or SKETCH)
+  upload u       Compile if needed and Upload, (requires S or SKETCH, optional PORT)
+  monitor m      Open serial monitor (optional PORT=<port> default=auto-detected, optional BAUD=<baudrate>, default 115200)
+  clean cl       Remove build artifacts```
+```
+
+
 ## Arduino Upload settings: ##
 When uploading software with the Arduino IDE ensure you have first installed the ESP32 Add-on in Arduino IDE there are [many tutorials](https://randomnerdtutorials.com/installing-esp32-arduino-ide-2-0/) on how to do this.
 
