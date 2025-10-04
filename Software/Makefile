@@ -22,7 +22,7 @@ DTO    ?= 100ms
 LFRMT  ?=                # pass `LFRMT=--json` to get JSON; `make list LFRMT=--json`
 PORT   ?=                # pass `PORT=/dev/ttyXXX`; e.g. `make upload S=Foo PORT=/dev/ttyUSB0`
 CLI_V  ?=                # pass `CLI_V=-v`; e.g. `make compile S=Foo CLI_V=-v`
-OTHER_CC ?=              # pass `OTHER_CC=xx` other compile commands such as --only-compilation-database
+OTHER_COMPILE_PARAMS ?=              # pass `OTHER_COMPILE_PARAMS=xx` other compile parameters such as --only-compilation-database
 
 CLI := arduino-cli $(CLI_V) --config-file "$(CONFIG)"
 
@@ -92,19 +92,22 @@ list l: ## `make l` List connected boards
 # Build product from ./<SKETCH>/<SKETCH>.ino
 $(BUILD)/$(SKETCH).ino.bin: ./$(SKETCH)/$(SKETCH).ino
 	@printf "Compiling sketch '%s' for %s" "$(SKETCH)" "$(FQBN)"; \
-	if [ -n '$(strip $(OTHER_CC))' ]; then \
-	  printf " with opts: %s" '$(OTHER_CC)'; \
+	if [ -n '$(strip $(OTHER_COMPILE_PARAMS))' ]; then \
+	  printf " with opts: %s" '$(OTHER_COMPILE_PARAMS)'; \
+	  if [[ '$(strip $(OTHER_COMPILE_PARAMS))' == *"only-compilation-database"* ]]; then \
+	    printf " to $(BUILD)/compile_commands.json"; \
+	  fi; \
 	fi; \
 	printf "\n"
-	@$(CLI) compile -b "$(FQBN)" --build-path "$(BUILD)" "./$(SKETCH)" $(OTHER_CC)
+	@$(CLI) compile -b "$(FQBN)" --build-path "$(BUILD)" "./$(SKETCH)" $(OTHER_COMPILE_PARAMS)
 
-compile c: ## `make c S=<SketchDir>` Compile a sketchjjjjj
+compile c: ## `make c S=<SketchDir>` Compile a sketch
 	$(call check-sketch)
 	@$(MAKE) $(BUILD)/$(SKETCH).ino.bin
 
-compile_commands cc: ## `make cc S=<SkethcDir>` Generate compile_commands.json using --only-compile-database
+compile_commands cc: ## `make ocdb S=<SkethcDir>` Generate `build/compile_commands.json` using --only-compilation-database
 	$(call check-sketch)
-	@$(MAKE) $(BUILD)/$(SKETCH).ino.bin OTHER_CC=--only-compilation-database
+	@$(MAKE) $(BUILD)/$(SKETCH).ino.bin OTHER_COMPILE_PARAMS=--only-compilation-database
 
 # Helper: resolve port (use PORT if set, else auto-detected), then run $(1)
 define GET_PORT
