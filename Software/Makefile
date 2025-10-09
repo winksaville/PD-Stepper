@@ -86,6 +86,9 @@ lib.%: ## `make lib.<cmd> PKG=<PackageName>` Runs arduino-cli lib <cmd> "$(PKG)"
 list l: ## `make l` List connected boards
 	$(CLI) board list $(LFRMT) --discovery-timeout "$(DTO)"
 
+core.%: ## `make lib.<cmd> PKG=<PackageName>` Runs arduino-cli lib <cmd> "$(PKG)"
+	$(CLI) core $(@:core.%=%) $(if $(PKG),"$(PKG)")
+
 # delete half-baked binary if compile fails
 .DELETE_ON_ERROR: $(BUILD)/$(SKETCH).ino.bin
 
