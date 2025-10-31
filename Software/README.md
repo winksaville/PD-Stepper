@@ -2,7 +2,7 @@
 
 #### If you just received your PD Stepper see the [Setup Instructions](https://github.com/joshr120/PD-Stepper/tree/main/Getting%20Started) for how to get started
 
-## Using Makefile and arduino-cli
+## Arduino-cli and Makefile
 
 Install [arduino-cli](https://arduino.github.io/arduino-cli/latest/installation/)
 and ensure it is in your PATH as arduino-cli.
@@ -29,31 +29,32 @@ use help to see other options:
 $ make help
 Usage:
   make help
-  make <target> SKETCH=<SketchDir>
+  make <target> {SKETCH|S}=<SketchDir>
 Examples:
-  make compile  SKETCH=esp32s3-rbg-blink
-  make c SKETCH=esp32s3-rbg-blink
+  make compile  SKETCH=Simple_Button_Control
+  make c S=Simple_Button_Control
 
 Notes:
   - <SketchDir> must be a subdir containing <SketchDir>/<SketchDir>.ino
   - Trailing '/' after the sketch name is accepted
 
 Targets:
-  help h H       Show this help
-  init           One-time: init config, install core + libs
-  uninit         Remove all files/dirs created by running `make init`
-  lib.help       show lib help
-  #lib.<cmd>     lib.<cmd>
-  lib.<cmd>      Runs: arduino-cli lib <cmd> "$(PKG)"
-  list l         List connected boards
-  compile c      Compile (requires S or SKETCH)
-  upload u       Compile if needed and Upload, (requires S or SKETCH, optional PORT)
-  monitor m      Open serial monitor (optional PORT=<port> default=auto-detected, optional BAUD=<baudrate>, default 115200)
-  clean cl       Remove build artifacts```
+  help h H                `make h` Show this help
+  init                    `make init` One-time: init config, install core + libs
+  uninit                  `make unint` Remove all files/dirs created by running `make init`
+  lib.help                `make lib.help` Show lib help
+  lib.<cmd>               `make lib.<cmd> PKG=<PackageName>` Runs arduino-cli lib <cmd> "$(PKG)"
+  list l                  `make l` List connected boards
+  core.<cmd>              `make lib.<cmd> PKG=<PackageName>` Runs arduino-cli lib <cmd> "$(PKG)"
+  compile c               `make c S=<SketchDir>` Compile a sketch
+  compile_commands cc     `make cc S=<SketchDir>` Generate `build/compile_commands.json` using --only-compilation-database
+  upload u                `make u S=<SketchDir>` Compile if needed and Upload, (requires S or SKETCH, optional PORT)
+  monitor m               `make m {PORT=<port> BAUD=<baudrate>` Open serial monitor optional; PORT=auto-detected, BAUD=115200)
+  clean cl                `make cl` Remove build artifacts
 ```
 
 
-## Arduino Upload settings: ##
+## Arduino-ide Upload settings: ##
 When uploading software with the Arduino IDE ensure you have first installed the ESP32 Add-on in Arduino IDE there are [many tutorials](https://randomnerdtutorials.com/installing-esp32-arduino-ide-2-0/) on how to do this.
 
 The Board type should be set as "ESP32S3 Dev Module"
