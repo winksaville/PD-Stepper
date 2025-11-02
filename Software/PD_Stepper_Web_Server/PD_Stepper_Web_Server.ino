@@ -1,15 +1,15 @@
 /*
  * PD Stepper Webpage Example:
- * 
+ *
  *********  Software Version 1.0 ******************
- * 
+ *
  *    How to Use:
  * 1. Connect to created WiFi Network named "PD Stepper"
  * 2. On a browser visit 192.168.4.1
- * 
+ *
  *  For more info and to purchase PD Stepper kits visit:
  *  https://thingsbyjosh.com
- * 
+ *
  * TODO:
  * - More TMC error conditions (including power bad?)
  * - Stall guard disabled at lower speeds
@@ -217,7 +217,7 @@ void setup() {
   pinMode(LED2, OUTPUT);
   pinMode(STEP, OUTPUT);
   pinMode(DIR, OUTPUT);
-  
+
 
   //Setup serial comms with TMC2209
   pinMode(MS1, OUTPUT);
@@ -233,7 +233,7 @@ void setup() {
   Wire.begin(SDA, SCL);  //start wire with earlier defined pins
 
   readSettings(); //get saved values from EEPROM
-  
+
   stepper_driver.setup(serial_stream, SERIAL_BAUD_RATE, TMC2209::SERIAL_ADDRESS_0, TMC_RX, TMC_TX);
   stepper_driver.setRunCurrent(RUN_CURRENT_PERCENT);
   stepper_driver.enableAutomaticCurrentScaling(); //current control mode
@@ -245,16 +245,17 @@ void setup() {
   configureSettings(); //use saved settings
 
   delay(200); //delay needed before "Serial.begin" to ensure bootloader mode entered correctly. Otherwise bootloader mode may need to be manually entered by holding BOOT, press RST, release BOOT
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(115200, SERIAL_8N1, AUX2, AUX1);
   Serial.println("Code Starting");
-  
+
   // Set up ESP32 as an Access Point
   WiFi.softAP(ssid, password);
   IPAddress ip = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(ip);
 
-  
+
   // Serve HTML page with JavaScript for updating values
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/html", index_html, processor);
@@ -292,7 +293,7 @@ void setup() {
       AsyncWebParameter* sliderParam = request->getParam("positionControl", true);
       String posValue = sliderParam->value();
       stepper_driver.moveAtVelocity(0); //stop moving incase still moving from velocity control mode
-      
+
       if (posValue == "1"){
         setPoint -= 25600; //must be factor of 256 due to how the microsteping calcs work
       } else if (posValue == "2"){
@@ -301,7 +302,7 @@ void setup() {
         setPoint += 12800;
       } else if (posValue == "4"){
         setPoint += 25600;
-      } 
+      }
     }
     request->send(200); // Respond with HTTP 200 OK
   });
@@ -316,7 +317,7 @@ void setup() {
     }
     if (request->hasParam("setvoltage", true)) {
       inputMessage = request->getParam("setvoltage", true)->value();
-      setVoltage = inputMessage;     
+      setVoltage = inputMessage;
       stepper_driver.moveAtVelocity(0); //stop when voltage changed
     }
     if (request->hasParam("microsteps", true)) {
@@ -347,7 +348,7 @@ void setup() {
 
   digitalWrite(LED1, HIGH); //flash LED after setep complete
   delay(200);
-  digitalWrite(LED1, LOW); 
+  digitalWrite(LED1, LOW);
 
 }
 
@@ -369,13 +370,13 @@ void loop() {
     }
   }
 
-  
+
 
   //position control done here (open-loop for now)
   int delaySpeed = 4500; //delay speed smaller value = faster
   int microSteps = microsteps.toInt();
   int delaySpeedAdjusted = delaySpeed/microSteps; //adjusting speed depending on microsteps
-  
+
   if (setPoint > CurrentPosition){ //position control
     if (micros()-lastStep > delaySpeedAdjusted){ //always move same speed regardless of what microsteps set
       digitalWrite(DIR, LOW);
@@ -400,7 +401,7 @@ void loop() {
     bool currentIncButtonState = digitalRead(SW3);
     bool currentDecButtonState = digitalRead(SW1);
     bool currentResetButtonState = digitalRead(SW2);
-  
+
     if (currentIncButtonState != incButtonState) {
       incButtonState = currentIncButtonState;
       if (incButtonState == LOW) {
@@ -411,7 +412,7 @@ void loop() {
         stepper_driver.moveAtVelocity(buttonSpeed*(microsteps.toInt()));
       }
     }
-  
+
     if (currentDecButtonState != decButtonState) {
       decButtonState = currentDecButtonState;
       if (decButtonState == LOW) {
@@ -422,7 +423,7 @@ void loop() {
         stepper_driver.moveAtVelocity(buttonSpeed*(microsteps.toInt()));
       }
     }
-  
+
     if (currentResetButtonState != resetButtonState) {
       resetButtonState = currentResetButtonState;
       if (resetButtonState == LOW) {
@@ -432,7 +433,7 @@ void loop() {
     }
   }
 
-  
+
 }
 
 void readEncoder(){
@@ -505,12 +506,12 @@ void configureSettings(){
 }
 
 //Read saved settings from EEPROM//
-void readSettings(){ 
+void readSettings(){
 
   preferences.begin("settings", false); //open the settings namespace
 
-  enabled1 = preferences.getString("enable", ""); 
-  
+  enabled1 = preferences.getString("enable", "");
+
   if (enabled1 == ""){ //EEPROM has not been saved to before so save defaults
     preferences.end(); //close to write EEPROM can open again
     enabled1 = "enabled";
@@ -522,11 +523,11 @@ void readSettings(){
     writeSettings();
   } else {
     Serial.println("Settings found in EEPROM");
-    setVoltage = preferences.getString("voltage", ""); 
-    microsteps = preferences.getString("microsteps", ""); 
-    current = preferences.getString("current", ""); 
-    stallThreshold = preferences.getString("stallThreshold", ""); 
-    standstillMode = preferences.getString("standstillMode", ""); 
+    setVoltage = preferences.getString("voltage", "");
+    microsteps = preferences.getString("microsteps", "");
+    current = preferences.getString("current", "");
+    stallThreshold = preferences.getString("stallThreshold", "");
+    standstillMode = preferences.getString("standstillMode", "");
     preferences.end();
   }
 }
@@ -538,16 +539,16 @@ void writeSettings(){ //easiest (not best) is to write strings and then re-calcu
 
   preferences.begin("settings", false);
 
-  preferences.putString("enable", enabled1); 
-  preferences.putString("voltage", setVoltage); 
-  preferences.putString("microsteps", microsteps); 
-  preferences.putString("current", current); 
-  preferences.putString("stallThreshold", stallThreshold); 
-  preferences.putString("standstillMode", standstillMode); 
+  preferences.putString("enable", enabled1);
+  preferences.putString("voltage", setVoltage);
+  preferences.putString("microsteps", microsteps);
+  preferences.putString("current", current);
+  preferences.putString("stallThreshold", stallThreshold);
+  preferences.putString("standstillMode", standstillMode);
 
   Serial.println("Saving settings to flash");
 
   preferences.end();
-  
+
   configureSettings(); //use new settings
 }

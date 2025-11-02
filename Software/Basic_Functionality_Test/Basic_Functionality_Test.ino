@@ -1,11 +1,12 @@
-
+//#include "esp32-hal-uart.h"
+//SerialConfig
 /*  Code to test the basic functionality of the USB PD Stepper Driver and Controller
- * 
+ *
  * Note this only uses the step and dir pins to interface with the TMC2209. See other examples for more advanced serial commms
  * by Things by Josh 2024
  */
 
- 
+
 #include <Wire.h> //For I2C for encoder
 
 /////////////////////////
@@ -83,14 +84,14 @@ void setup() {
   pinMode(MS1, OUTPUT);
   pinMode(SPREAD, OUTPUT);
   pinMode(INDEX, INPUT);
-  pinMode(DIAG, INPUT); 
+  pinMode(DIAG, INPUT);
 
   digitalWrite(TMC_EN, HIGH); //High to disable on startup
   digitalWrite(MS1, LOW); //Microstep resolution configuration (internal pull-down resistors: MS2, MS1: 00: 1/8, 01: 1/32, 10: 1/64 11: 1/16
   digitalWrite(MS2, LOW);
   digitalWrite(DIR, motorDir); //set direction at start
 
-  
+
   //PD Trigger Setup
   pinMode(PG, INPUT);
   pinMode(CFG1, OUTPUT);
@@ -117,7 +118,8 @@ void setup() {
   digitalWrite(LED2, LOW);
 
   delay(500); //delay needed before "Serial.begin" to ensure bootloader mode entered correctly. Otherwise bootloader mode may need to be manually entered by holding BOOT, press RST, release BOOT
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(115200, SERIAL_8N1, AUX2, AUX1);
   Serial.println("Code Starting");
 
     //AS5600 Hall Encoder Setup
@@ -142,7 +144,7 @@ void loop() {
   }
 
   delay(100);
-  
+
 }
 
 //run the stepper motor at set speed and direction (ensure readVoltage() called first to get PGState)
@@ -212,5 +214,5 @@ void readEncoder(){
 
   Serial.print("Encoder Counts: ");
   Serial.println(total_encoder_counts);
-  Serial.println("");  
+  Serial.println("");
 }

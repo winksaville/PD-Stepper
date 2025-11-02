@@ -8,7 +8,7 @@
 #include <Wire.h> //For I2C for encoder
 
 // REPLACE WITH YOUR RECEIVER MAC Address
-uint8_t broadcastAddress[] = {0x63, 0xE8, 0x33, 0x60, 0x74, 0x5C}; //REPLACE WITH YOUR SENDER 
+uint8_t broadcastAddress[] = {0x63, 0xE8, 0x33, 0x60, 0x74, 0x5C}; //REPLACE WITH YOUR SENDER
 
 // Structure example to send data
 // Must match the receiver structure
@@ -76,14 +76,14 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 //  Serial.print("\r\nLast Packet Send Status:\t");
 //  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
- 
+
 void setup() {
   pinMode(SW1, INPUT);
   pinMode(SW2, INPUT);
   pinMode(SW3, INPUT);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
-  
+
   //PD Trigger Setup
   pinMode(PG, INPUT);
   pinMode(CFG1, OUTPUT);
@@ -99,9 +99,10 @@ void setup() {
 
 
   delay(500); //delay needed before "Serial.begin" to ensure bootloader mode entered correctly. Otherwise bootloader mode may need to be manually entered by holding BOOT, press RST, release BOOT
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(115200, SERIAL_8N1, AUX2, AUX1);
   Serial.println("Code Starting");
- 
+
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
 
@@ -114,13 +115,13 @@ void setup() {
   // Once ESPNow is successfully Init, we will register for Send CB to
   // get the status of Trasnmitted packet
   esp_now_register_send_cb(OnDataSent);
-  
+
   // Register peer
   memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 0;  
+  peerInfo.channel = 0;
   peerInfo.encrypt = false;
-  
-  // Add peer        
+
+  // Add peer
   if (esp_now_add_peer(&peerInfo) != ESP_OK){
     Serial.println("Failed to add peer");
     return;
@@ -128,9 +129,9 @@ void setup() {
 
   //AS5600 Hall Encoder Setup
   Wire.begin(SDA, SCL);  //start wire with earlier defined pins
-  
+
 }
- 
+
 void loop() {
   //flash LED to show code is running
   if (millis() - lastFlash > flashInt){
@@ -175,8 +176,8 @@ void loop() {
   Serial.println("");
   Serial.print("Encoder Counts: ");
   Serial.println(total_encoder_counts);
-  Serial.println("");  
-  
+  Serial.println("");
+
 
 //  if (digitalRead(SW3) == LOW) {
 //    pos = pos + 300;
@@ -195,14 +196,14 @@ void loop() {
 //    Serial.println("pos reset");
 //  }
 
-  
+
   // Set values to send
 //  myData.pos = pos;
   myData.pos = total_encoder_counts;
-  
+
   // Send message via ESP-NOW (should probably schedule as doesnt need to be too fast
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
-   
+
   if (result != ESP_OK) {
     Serial.println("Error sending the data");
   }

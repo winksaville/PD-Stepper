@@ -70,14 +70,14 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 //  Serial.println(myData.pos);
   setPos = myData.pos;
 }
- 
+
 void setup() {
   pinMode(SW1, INPUT);
   pinMode(SW2, INPUT);
   pinMode(SW3, INPUT);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
-  
+
   //PD Trigger Setup
   pinMode(PG, INPUT);
   pinMode(CFG1, OUTPUT);
@@ -98,15 +98,16 @@ void setup() {
   digitalWrite(TMC_EN, HIGH); //High to disable on startup
   digitalWrite(MS1, HIGH); //Microstep resolution configuration (internal pull-down resistors: MS2, MS1: 00: 1/8, 01: 1/32, 10: 1/64 11: 1/16
   digitalWrite(MS2, LOW);
-  
+
   digitalWrite(LED1, LOW);
   digitalWrite(LED2, LOW);
 
 
   delay(500); //delay needed before "Serial.begin" to ensure bootloader mode entered correctly. Otherwise bootloader mode may need to be manually entered by holding BOOT, press RST, release BOOT
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(115200, SERIAL_8N1, AUX2, AUX1);
   Serial.println("Code Starting");
-  
+
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
 
@@ -115,12 +116,12 @@ void setup() {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
-  
+
   // Once ESPNow is successfully Init, we will register for recv CB to
   // get recv packer info
   esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 }
- 
+
 void loop() {
   noInterrupts();
   signed long setPoint = setPos*3.125;
@@ -131,7 +132,7 @@ void loop() {
   if (abs(Error) < (550-minDelay)){ //200 is essentially the "Kp" gain
     minDelay = 550 - abs(Error);
   }
-  
+
   PGState = digitalRead(PG);
   if (currentPos != setPoint and PGState == 0){ //move motor
 //    if (micros() - lastStep > minDelay){  //min time between steps (or use delay instead)
@@ -151,7 +152,7 @@ void loop() {
         lastState = 0;
       }
 //    }
-            
+
   } else{
     digitalWrite(TMC_EN, HIGH); //disable motor when setpoint reached
   }

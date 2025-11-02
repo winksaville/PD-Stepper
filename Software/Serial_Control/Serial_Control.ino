@@ -1,6 +1,6 @@
 /*
  * PD Stepper Serial Control Example
- * 
+ *
  * TODO:
  *  - Option for continuus encoder output (choose Hz)
  *  - Option to change encoder type (counts or deg)
@@ -126,7 +126,7 @@ void setup() {
   pinMode(LED2, OUTPUT);
   pinMode(STEP, OUTPUT);
   pinMode(DIR, OUTPUT);
-  
+
 
   //Setup serial comms with TMC2209
   pinMode(MS1, OUTPUT);
@@ -143,7 +143,7 @@ void setup() {
 
 
   readSettings(); //get saved values from EEPROM
-  
+
   stepper_driver.setup(serial_stream, SERIAL_BAUD_RATE, TMC2209::SERIAL_ADDRESS_0, TMC_RX, TMC_TX);
   stepper_driver.setRunCurrent(RUN_CURRENT_PERCENT);
   stepper_driver.enableAutomaticCurrentScaling(); //current control mode
@@ -159,19 +159,20 @@ void setup() {
   encoder_offset = total_encoder_counts;
 
   delay(200); //delay needed before "Serial.begin" to ensure bootloader mode entered correctly. Otherwise bootloader mode may need to be manually entered by holding BOOT, press RST, release BOOT
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(115200, SERIAL_8N1, AUX2, AUX1);
 //  Serial.println("Code Starting");
 
   digitalWrite(LED1, HIGH); //flash LED after setep complete
   delay(200);
-  digitalWrite(LED1, LOW); 
+  digitalWrite(LED1, LOW);
 
 }
 
 void loop() {
 
   readSerialCommands(); //receive commands (may need to be scheduled)
-  
+
 
   if (millis() - lastEncRead >= mainFreq){ //main loop
     lastEncRead = millis();
@@ -192,11 +193,11 @@ void loop() {
   }
 
 
-  
+
  //get delay based on deg/s, microsteps, steps pre rev
  unsigned long step_delay_us = getStepDelay(positionSpeed, stepsPerRev, microsteps); //can probably move this, dont need to re-calc each time
- 
-  //set STEP output low after half the delay as passed 
+
+  //set STEP output low after half the delay as passed
   if ((micros()-lastStep > (step_delay_us/2)) and (state == HIGH)){
     state = LOW;
     digitalWrite(STEP, LOW);
@@ -213,7 +214,7 @@ void loop() {
         CurrentPosition = CurrentPosition + (256/microsteps);  //update current position taking into account microsteps set
         lastStep = micros();
       }
-      
+
     } else if (setPoint < (CurrentPosition - 256/microsteps)){ //position control (move if setpoint more than 1 microstep away)
       if (micros()-lastStep > step_delay_us){
         digitalWrite(DIR, mappingDirection ? LOW : HIGH); //set direction based on encoder mapping dir (as some motors wired in reverse)
@@ -224,7 +225,7 @@ void loop() {
       }
     }
 
-  //MOVE FROM ENCODER POSITION control 
+  //MOVE FROM ENCODER POSITION control
   } else {
     //move to setpoint using delay adjusted for current micostep value
     if (microsteps_to_move >= 256/microsteps){ //position control (move if setpoint more than 1 microstep away)
@@ -235,7 +236,7 @@ void loop() {
         microsteps_to_move = microsteps_to_move - (256/microsteps);  //update number of microsteps left to move
         lastStep = micros();
       }
-      
+
     } else if (microsteps_to_move <= -256/microsteps){ //position control (move if setpoint more than 1 microstep away)
       if (micros()-lastStep > step_delay_us){
         digitalWrite(DIR, mappingDirection ? LOW : HIGH); //set direction based on encoder mapping dir (as some motors wired in reverse)n
@@ -246,8 +247,8 @@ void loop() {
       }
     }
   }
-  
-  
+
+
 
   //Handle buttons inputs (seperate velocity control)
   if ((millis() - lastDebounceTime) > debounceDelay) {
@@ -255,7 +256,7 @@ void loop() {
     bool currentIncButtonState = digitalRead(SW3);
     bool currentDecButtonState = digitalRead(SW1);
     bool currentResetButtonState = digitalRead(SW2);
-  
+
     if (currentIncButtonState != incButtonState) {
       incButtonState = currentIncButtonState;
       if (incButtonState == LOW) {
@@ -266,7 +267,7 @@ void loop() {
         stepper_driver.moveAtVelocity(buttonSpeed*(microsteps));
       }
     }
-  
+
     if (currentDecButtonState != decButtonState) {
       decButtonState = currentDecButtonState;
       if (decButtonState == LOW) {
@@ -277,7 +278,7 @@ void loop() {
         stepper_driver.moveAtVelocity(buttonSpeed*(microsteps));
       }
     }
-  
+
     if (currentResetButtonState != resetButtonState) {
       resetButtonState = currentResetButtonState;
       if (resetButtonState == LOW) {
@@ -286,7 +287,7 @@ void loop() {
       }
     }
   }
-  
+
 }
 
 void readSerialCommands() {
@@ -308,20 +309,20 @@ void readSerialCommands() {
         Serial.println(targetAngle);
       }
     }
-    
+
     else if (cmd.startsWith("vel=")) {
       float motorSpeed = cmd.substring(4).toFloat();
 
       //convert command from deg/s to microsteps_per_period
       int32_t microsteps_per_period = ((motorSpeed/360.0)*stepsPerRev*microsteps)/0.715;
-      
+
       stepper_driver.moveAtVelocity(microsteps_per_period*-1);  //move at set speed
       if (verboseOutput) {
         Serial.print("SUCCESS: Speed set to: ");
         Serial.println(motorSpeed);
       }
     }
-    
+
     else if (cmd.startsWith("steps_per_rev=")) {
       int stepsPerRevRec = cmd.substring(14).toInt();
       if (stepsPerRevRec == 200 or stepsPerRevRec == 400){
@@ -352,7 +353,7 @@ void readSerialCommands() {
         Serial.println("ERROR: Enable must be set to 0, 1, FALSE or TRUE");
       }
     }
-    
+
     else if (cmd.startsWith("microsteps=")) {
       int microstepsRec = cmd.substring(11).toInt();
       if (microstepsRec == 1 or microstepsRec == 4 or microstepsRec == 8 or microstepsRec == 16 or microstepsRec == 32 or microstepsRec == 64 or microstepsRec == 128 or microstepsRec == 256){
@@ -519,7 +520,7 @@ void readSerialCommands() {
       Serial.println(mappingDirection);
       Serial.print("verboseOutput = ");
       Serial.println(verboseOutput);
-      
+
       Serial.println("");
     }
 
@@ -633,23 +634,23 @@ void configureSettings(){
 
 
 //Read saved settings from EEPROM//
-void readSettings(){ 
+void readSettings(){
 
   preferences.begin("settings", false); //open the settings namespace
 
-  enabled1 = preferences.getBool("enable", enabled1); 
-  setVoltage = preferences.getInt("voltage", setVoltage); 
-  microsteps = preferences.getInt("microsteps", microsteps); 
-  current = preferences.getInt("current", current); 
-  stallThreshold = preferences.getInt("stallThreshold", stallThreshold); 
-  standstillMode = preferences.getString("standstillMode", standstillMode); 
-  positionSpeed = preferences.getFloat("positionSpeed", positionSpeed); 
-  stepsPerRev = preferences.getInt("stepsPerRev", stepsPerRev); 
-  mappingDirection = preferences.getBool("mapDir", mappingDirection); 
-  closedLoopType = preferences.getString("closedLoopType", closedLoopType); 
-  
-  verboseOutput = preferences.getBool("verboseOutput", verboseOutput); 
-  
+  enabled1 = preferences.getBool("enable", enabled1);
+  setVoltage = preferences.getInt("voltage", setVoltage);
+  microsteps = preferences.getInt("microsteps", microsteps);
+  current = preferences.getInt("current", current);
+  stallThreshold = preferences.getInt("stallThreshold", stallThreshold);
+  standstillMode = preferences.getString("standstillMode", standstillMode);
+  positionSpeed = preferences.getFloat("positionSpeed", positionSpeed);
+  stepsPerRev = preferences.getInt("stepsPerRev", stepsPerRev);
+  mappingDirection = preferences.getBool("mapDir", mappingDirection);
+  closedLoopType = preferences.getString("closedLoopType", closedLoopType);
+
+  verboseOutput = preferences.getBool("verboseOutput", verboseOutput);
+
   preferences.end();
 }
 
@@ -660,20 +661,20 @@ void writeSettings(){
 
   preferences.begin("settings", false);
 
-  preferences.putBool("enable", enabled1); 
-  preferences.putInt("voltage", setVoltage); 
-  preferences.putInt("microsteps", microsteps); 
-  preferences.putInt("current", current); 
-  preferences.putInt("stallThreshold", stallThreshold); 
-  preferences.putString("standstillMode", standstillMode); 
-  preferences.putFloat("positionSpeed", positionSpeed); 
-  preferences.putInt("stepsPerRev", stepsPerRev); 
-  preferences.putBool("mapDir", mappingDirection); 
-  preferences.putString("closedLoopType", closedLoopType); 
-  
-  preferences.putBool("verboseOutput", verboseOutput); 
-  
+  preferences.putBool("enable", enabled1);
+  preferences.putInt("voltage", setVoltage);
+  preferences.putInt("microsteps", microsteps);
+  preferences.putInt("current", current);
+  preferences.putInt("stallThreshold", stallThreshold);
+  preferences.putString("standstillMode", standstillMode);
+  preferences.putFloat("positionSpeed", positionSpeed);
+  preferences.putInt("stepsPerRev", stepsPerRev);
+  preferences.putBool("mapDir", mappingDirection);
+  preferences.putString("closedLoopType", closedLoopType);
+
+  preferences.putBool("verboseOutput", verboseOutput);
+
   preferences.end();
-  
+
   configureSettings(); //use new settings
 }

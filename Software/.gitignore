@@ -1,3 +1,4 @@
+.cache/
 build/
 shared/
 arduino-cli.yaml

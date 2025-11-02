@@ -1,7 +1,7 @@
 
 
 /*  Simple code to run a stepper motor with buttons using the USB PD Stepper Driver and Controller
- * 
+ *
  * by Things by Josh 2024
  */
 
@@ -72,13 +72,13 @@ bool flashState = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  
+
   pinMode(SW1, INPUT);
   pinMode(SW2, INPUT);
   pinMode(SW3, INPUT);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
-  
+
     //PD Trigger Setup
   pinMode(PG, INPUT);
   pinMode(CFG1, OUTPUT);
@@ -88,7 +88,7 @@ void setup() {
   digitalWrite(CFG1, LOW);  //  1    0     0     0     0
   digitalWrite(CFG2, LOW);  //  -    0     0     1     1
   digitalWrite(CFG3, HIGH); //  -    0     1     1     0
-  
+
   //Stepper simple setup (no serial comms)
   pinMode(TMC_EN, OUTPUT);
   pinMode(STEP, OUTPUT);
@@ -105,11 +105,12 @@ void setup() {
 
 
   delay(500); //delay needed before "Serial.begin" to ensure bootloader mode entered correctly. Otherwise bootloader mode may need to be manually entered by holding BOOT, press RST, release BOOT
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(115200, SERIAL_8N1, AUX2, AUX1);
   Serial.println("Code Starting");
 
-  
-  
+
+
 }
 
 void loop() {
@@ -123,7 +124,7 @@ void loop() {
       flashState = 0;
     }
   }
-  
+
   // Read and doubounce inputs and incriment counter
   if ((millis() - lastDebounceTime) > debounceDelay) {
     lastDebounceTime = millis();
@@ -165,13 +166,13 @@ void loop() {
   }
 
 
-    
+
 
     //read PG to check if motor shoulf be enabled (this should be scheduled to not run as often)
     PGState = digitalRead(PG);
     if (counter != 0 and PGState == 0){  //only enable motor if correct voltage seen (to stop motor running off laptop 5V when programming)
       digitalWrite(TMC_EN, LOW); //low to enable (should really only do this on state change)
-      
+
       int abs_counter = 0;
       if (counter > 0){ //set direction (should only do this on Dir change really)
         digitalWrite(DIR, HIGH);
@@ -180,7 +181,7 @@ void loop() {
         digitalWrite(DIR, LOW);
         abs_counter = counter*-1;
       }
-      
+
       if (micros() - lastStep > delays[abs_counter]){
         lastStep = micros();
         digitalWrite(STEP, lastState);
