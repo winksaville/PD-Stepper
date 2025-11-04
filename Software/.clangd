@@ -19,15 +19,15 @@ CompileFlags:
   # Help from the bot:
   #  https://chatgpt.com/c/68ebd1eb-eee0-8333-b77f-44bc3b8f651b
   Add: [
-    "--sysroot=/home/wink/data/prgs/PD-Stepper/Software/shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf",
+    "--sysroot=./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf",
     "-target","xtensa",
     #"-resource-dir=/",
-    "-isystem","/home/wink/data/prgs/PD-Stepper/Software/shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/lib/gcc/xtensa-esp32s3-elf/8.4.0/include",
-    "-isystem","/home/wink/data/prgs/PD-Stepper/Software/shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include/c++/8.4.0/xtensa-esp32s3-elf",
-    "-isystem","/home/wink/data/prgs/PD-Stepper/Software/shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include/c++/8.4.0",
-    "-isystem","/home/wink/data/prgs/PD-Stepper/Software/shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include",
+    "-isystem","./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/lib/gcc/xtensa-esp32s3-elf/8.4.0/include",
+    "-isystem","./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include/c++/8.4.0/xtensa-esp32s3-elf",
+    "-isystem","./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include/c++/8.4.0",
+    "-isystem","./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include",
   ]
-  Compiler: /home/wink/data/prgs/PD-Stepper/Software/shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/bin/xtensa-esp32s3-elf-g++
+  Compiler: ./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/bin/xtensa-esp32s3-elf-g++
 
 # Disable warnings about Unsed Includes
 #  Bot: https://chatgpt.com/share/68ed4b66-2764-800c-97d8-0ee4fc3ef7fa
