@@ -1,5 +1,10 @@
 # .clangd
 CompileFlags:
+  # Determine the compiler by creating compile_commands.json
+  # using `make cc SKETCH=<SKETCH_PATH>` and it will output
+  # `bud/compile_commands.json`. In that file the first
+  # `"arguments" : []` is the compiler:
+  Compiler: ./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/bin/xtensa-esp32s3-elf-g++
   # If a file you are looking is "red" then clangd is
   # having trouble parsing it. One issue is "Unknown argument""
   # if you see this just add that flag to Remove list below:
@@ -12,22 +17,30 @@ CompileFlags:
     "-fno-tree-switch-conversion",
     "-freorder-blocks",
     "-c",
-    #"-resource-dir",
-    #"-internal-isystem",
-    #"-internal-externc-isystem",
   ]
   # Help from the bot:
   #  https://chatgpt.com/c/68ebd1eb-eee0-8333-b77f-44bc3b8f651b
   Add: [
+    # Use the `compiler` above and pass -print-sysroot to find the "sysroot" value:
     "--sysroot=./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf",
     "-target","xtensa",
-    #"-resource-dir=/",
+    # This I found these by looking looking in `./shared` for a tile that `clangd` said it could not find.
     "-isystem","./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/lib/gcc/xtensa-esp32s3-elf/8.4.0/include",
     "-isystem","./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include/c++/8.4.0/xtensa-esp32s3-elf",
     "-isystem","./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include/c++/8.4.0",
     "-isystem","./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/xtensa-esp32s3-elf/include",
+    #"-resource-dir=/", # The default resource-dir on my system is `/usr/lib/clang/21`
+                       # setting it to `/` causes one or more deep includes to not be found.
+                       # Enabling this causes the following error in Arduino.h at line 33:
+                       #   #include "freertos/FreeRTOS.h"
+                       # And vscode shows:
+                       #   In included file: 'limits.h' file not found
+                       #   limits.h(132, 16): Error occurred here
+                       #
+                       # You can use somethinglike to test on command line:
+                       #  `clangd --check=Simple_Button_Control/Simple_Button_Control.cpp --log=verbose &> x.txt`
+                       # and look at x.txt. Searching for `-resource-dir` will show what clang is using.
   ]
-  Compiler: ./shared/data/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/bin/xtensa-esp32s3-elf-g++
 
 # Disable warnings about Unsed Includes
 #  Bot: https://chatgpt.com/share/68ed4b66-2764-800c-97d8-0ee4fc3ef7fa
