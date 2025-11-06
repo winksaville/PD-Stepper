@@ -61,6 +61,19 @@ help h H: ## `make h` Show this help
 	$(call indent, $(INDENT_ZR0), "Targets:")
 	@awk -v indent_pad=$(INDENT_PAD) -v desc_pad=$(DESC_PAD) -f support/target-list.awk $(lastword $(MAKEFILE_LIST))
 
+# esptool has a dependency on pyserial, check if it's installed
+.PHONY: check-pyserial
+check-pyserial:
+	@python -c "import serial" >/dev/null 2>&1 || { \
+	  echo "Missing pyserial — install it globally with your system’s package manager,"; \
+	  echo "for example:"; \
+	  echo "  Arch:    sudo pacman -S python-pyserial"; \
+	  echo "  Ubuntu:  sudo apt install python3-serial"; \
+	  echo "  Fedora:  sudo dnf install python3-pyserial"; \
+	  echo "  or install pyserial inside your virtual environment"; \
+	  exit 1; \
+	}
+
 # esp32:32 3.3.2 won't compile because mbedtls_md5_xxx_ret are not defined:
 #    wink@3900x 25-10-31T19:19:08.864Z:~/data/prgs/PD-Stepper/Software (wink-arduino-cli-2)
 #    $ make c S=PD_Stepper_Web_Server/
@@ -100,8 +113,7 @@ help h H: ## `make h` Show this help
 # esp32:esp32@2.0.10 does compile!
 #    wink@3900x 25-10-31T19:26:03.932Z:~/data/prgs/PD-Stepper/Software (wink-arduino-cli-2)
 #    $ make c S=PD_Stepper_Web_Server/
-#    arduino-cli  --config-file "./arduino-cli.yaml" compile -b "esp32:esp32:esp32s3" --build-path "build" "./PD_Stepper_Web_Server" ; \
-#
+#    arduino-cli  --config-file "./arduino-cli.yaml" compile -b "esp32:esp32:esp32s3" --build-path "build" "./PD_Stepper_Web_Server"
 #    Sketch uses 805241 bytes (61%) of program storage space. Maximum is 1310720 bytes.
 #    Global variables use 44248 bytes (13%) of dynamic memory, leaving 283432 bytes for local variables. Maximum is 327680 bytes.
 #    wink@3900x 25-10-31T19:26:24.774Z:~/data/prgs/PD-Stepper/Software (wink-arduino-cli-2)
@@ -110,8 +122,7 @@ help h H: ## `make h` Show this help
 # esp32:esp32@2.0.14 does compile!
 #    wink@3900x 25-10-31T19:29:10.916Z:~/data/prgs/PD-Stepper/Software (wink-arduino-cli-2)
 #    $ make c S=PD_Stepper_Web_Server/
-#    arduino-cli  --config-file "./arduino-cli.yaml" compile -b "esp32:esp32:esp32s3" --build-path "build" "./PD_Stepper_Web_Server" ; \
-#
+#    arduino-cli  --config-file "./arduino-cli.yaml" compile -b "esp32:esp32:esp32s3" --build-path "build" "./PD_Stepper_Web_Server"
 #    Sketch uses 809937 bytes (61%) of program storage space. Maximum is 1310720 bytes.
 #    Global variables use 44324 bytes (13%) of dynamic memory, leaving 283356 bytes for local variables. Maximum is 327680 bytes.
 #    wink@3900x 25-10-31T19:29:29.689Z:~/data/prgs/PD-Stepper/Software (wink-arduino-cli-2)
@@ -128,6 +139,7 @@ init: ## `make init` One-time: init config, install core + libs
 #	$(CLI) core install "esp32:esp32"		# mbedtls_md5_xxx_ret routines  are not defined so PD_Stepper_Web_Server won't compile
 	$(CLI) lib install "ESPAsyncWebServer"
 	$(CLI) lib install "TMC2209"
+	$(MAKE) check-pyserial  # check if pyserial is installed, errors if not
 
 uninit: ## `make unint` Remove all files/dirs created by running `make init`
 	rm -rf arduino-cli.yaml build shared
@@ -149,7 +161,7 @@ core.%: ## `make lib.<cmd> PKG=<PackageName>` Runs arduino-cli lib <cmd> "$(PKG)
 
 .PHONY: buildit
 buildit:
-	$(CLI) compile -b "$(FQBN)" --build-path "$(BUILD)" "./$(SKETCH)" $(OTHER_COMPILE_PARAMS); \
+	$(CLI) compile -b "$(FQBN)" --build-path "$(BUILD)" "./$(SKETCH)" $(OTHER_COMPILE_PARAMS)
 
 compile c: ## `make c S=<SketchDir>` Compile a sketch
 	$(call check-sketch)
